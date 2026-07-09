@@ -1,0 +1,1167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aditya Globals — Platform Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0F2A4A; --navy-2:#16385E; --orange:#F5810C; --orange-2:#FFA84D;
+    --bg:#F5F7FA; --card:#FFFFFF; --ink:#1D2939; --sub:#64748B; --line:#E6EAF0;
+    --green:#16A34A; --amber:#F0B429; --red:#E24545;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;}
+  h1,h2,h3,.display{font-family:'Sora',sans-serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  .app{display:flex;min-height:100vh;}
+
+  /* SIDEBAR */
+  .sidebar{width:230px;background:var(--navy);color:#fff;padding:22px 16px;display:flex;flex-direction:column;flex-shrink:0;}
+  .brand{display:flex;align-items:center;gap:10px;margin-bottom:22px;padding:0 6px;}
+  .brand svg{width:30px;height:30px;flex-shrink:0;}
+  .brand .txt{line-height:1.1;}
+  .brand .txt b{font-family:'Sora';font-size:15px;letter-spacing:.2px;}
+  .brand .txt span{font-size:10px;color:var(--orange-2);letter-spacing:1.5px;}
+  .roleSwitch{display:flex;background:rgba(255,255,255,.08);border-radius:10px;padding:4px;margin-bottom:18px;}
+  .roleSwitch button{flex:1;border:none;background:transparent;color:rgba(255,255,255,.7);font-family:'Inter';font-size:11px;font-weight:600;padding:8px 2px;border-radius:7px;cursor:pointer;}
+  .roleSwitch button.active{background:var(--orange);color:#fff;}
+  .nav{display:flex;flex-direction:column;gap:2px;}
+  .nav a{display:flex;align-items:center;gap:10px;color:rgba(255,255,255,.75);text-decoration:none;font-size:13.5px;font-weight:500;padding:9px 10px;border-radius:8px;cursor:pointer;}
+  .nav a:hover{background:rgba(255,255,255,.06);}
+  .nav a.on{background:rgba(255,255,255,.1);color:#fff;}
+  .sideFoot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;color:rgba(255,255,255,.5);}
+
+  /* MAIN */
+  .main{flex:1;min-width:0;}
+  .topbar{background:var(--card);border-bottom:1px solid var(--line);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;}
+  .topbar h2{margin:0;font-size:19px;}
+  .topbar .meta{font-size:12.5px;color:var(--sub);margin-top:2px;font-weight:500;}
+  .avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--orange),var(--orange-2));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px;font-family:'Sora';}
+  .topRight{display:flex;align-items:center;gap:16px;}
+  .bell{width:20px;height:20px;color:var(--sub);}
+  .content{padding:24px 28px 60px;}
+  .grid{display:grid;gap:18px;}
+  .g3{grid-template-columns:repeat(3,1fr);}
+  .g2{grid-template-columns:2fr 1fr;}
+  .g4{grid-template-columns:repeat(4,1fr);}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;}
+  .card h3{margin:0 0 14px;font-size:14.5px;display:flex;align-items:center;justify-content:space-between;}
+  .card h3 .lbl{display:flex;align-items:center;gap:8px;}
+  .card h3 a{font-size:11.5px;color:var(--orange);text-decoration:none;font-weight:600;cursor:pointer;}
+
+  .stat{padding:16px 18px;}
+  .stat .n{font-family:'Sora';font-size:26px;font-weight:700;margin:2px 0;}
+  .stat .l{font-size:12px;color:var(--sub);font-weight:600;}
+  .stat .d{font-size:11.5px;font-weight:600;margin-top:4px;}
+  .up{color:var(--green);} .down{color:var(--red);}
+
+  .ring-wrap{position:relative;width:88px;height:88px;flex-shrink:0;}
+  .ring-wrap svg{transform:rotate(-90deg);}
+  .ring-bg{fill:none;stroke:#EDF1F6;stroke-width:9;}
+  .ring-fg{fill:none;stroke:var(--orange);stroke-width:9;stroke-linecap:round;}
+  .ring-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;}
+  .ring-txt b{font-family:'Sora';font-size:19px;}
+  .ring-txt span{font-size:9.5px;color:var(--sub);font-weight:600;}
+
+  .liveCard{background:linear-gradient(120deg,var(--navy),var(--navy-2));color:#fff;border:none;position:relative;overflow:hidden;}
+  .liveCard::after{content:"";position:absolute;right:-40px;top:-40px;width:160px;height:160px;background:radial-gradient(circle,rgba(245,129,12,.35),transparent 70%);}
+  .liveTag{display:inline-flex;align-items:center;gap:6px;background:rgba(226,69,69,.18);color:#FF8A8A;font-size:10.5px;font-weight:700;padding:4px 9px;border-radius:20px;letter-spacing:.4px;}
+  .liveTag .dot{width:6px;height:6px;border-radius:50%;background:#FF5252;animation:pulse 1.4s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+  .liveCard h2{font-size:20px;margin:10px 0 4px;}
+  .liveCard .sub{font-size:12.5px;color:rgba(255,255,255,.7);margin-bottom:16px;}
+  .joinBtn,.primaryBtn{background:var(--orange);color:#fff;border:none;padding:10px 20px;border-radius:9px;font-weight:700;font-size:13px;cursor:pointer;}
+  .joinBtn:hover,.primaryBtn:hover{background:var(--orange-2);}
+  .ghostBtn{background:#fff;color:var(--navy);border:1px solid var(--line);padding:9px 16px;border-radius:9px;font-weight:700;font-size:12.5px;cursor:pointer;}
+  .ghostBtn:hover{border-color:var(--navy);}
+
+  .row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);}
+  .row:last-child{border-bottom:none;}
+  .ico{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ico svg{width:16px;height:16px;}
+  .row .txt{flex:1;min-width:0;}
+  .row .txt b{display:block;font-size:13px;font-weight:600;}
+  .row .txt span{font-size:11.5px;color:var(--sub);}
+  .badge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;}
+  .badge.due{background:#FFF1E0;color:var(--orange);}
+  .badge.done{background:#E7F7ED;color:var(--green);}
+  .badge.new{background:#EAF1FB;color:var(--navy-2);}
+
+  .vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;}
+  .vthumb{border-radius:10px;overflow:hidden;border:1px solid var(--line);cursor:pointer;}
+  .vthumb .tb{height:70px;background:linear-gradient(135deg,var(--navy),var(--navy-2));position:relative;display:flex;align-items:center;justify-content:center;}
+  .vthumb .tb svg{width:26px;height:26px;color:rgba(255,255,255,.85);}
+  .vthumb .tb .dur{position:absolute;bottom:5px;right:6px;background:rgba(0,0,0,.55);color:#fff;font-size:9.5px;padding:1px 5px;border-radius:4px;font-family:'IBM Plex Mono';}
+  .vthumb .info{padding:8px 9px;}
+  .vthumb .info b{font-size:11.5px;display:block;}
+  .vthumb .info span{font-size:10px;color:var(--sub);}
+
+  .bars{display:flex;align-items:flex-end;gap:10px;height:110px;padding-top:10px;}
+  .bar{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end;}
+  .bar .fill{width:100%;border-radius:6px 6px 3px 3px;background:linear-gradient(180deg,var(--orange-2),var(--orange));}
+  .bar .lab{font-size:9.5px;color:var(--sub);font-weight:600;}
+  .bar .val{font-size:10.5px;font-weight:700;font-family:'IBM Plex Mono';}
+
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th{text-align:left;color:var(--sub);font-weight:600;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;padding:0 8px 8px;border-bottom:1px solid var(--line);}
+  td{padding:9px 8px;border-bottom:1px solid var(--line);}
+  tr:last-child td{border-bottom:none;}
+  .pill{display:inline-flex;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;}
+
+  .mcq{border:1.5px dashed var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px;}
+  .mcq .q{font-size:13px;font-weight:600;margin-bottom:10px;}
+  .opt{display:flex;align-items:center;gap:9px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;margin-bottom:7px;font-size:12.5px;cursor:pointer;}
+  .opt.correct{border-color:var(--green);background:#F1FBF4;}
+  .opt .let{width:20px;height:20px;border-radius:5px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;}
+  .opt.correct .let{background:var(--green);color:#fff;}
+
+  .schedRow{display:flex;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--line);}
+  .schedRow:last-child{border-bottom:none;}
+  .schedTime{width:64px;font-family:'IBM Plex Mono';font-size:11.5px;font-weight:600;color:var(--navy-2);flex-shrink:0;}
+  .schedRow .txt b{font-size:13px;display:block;}
+  .schedRow .txt span{font-size:11px;color:var(--sub);}
+  .miniBtn{margin-left:auto;background:var(--navy);color:#fff;border:none;padding:7px 14px;border-radius:7px;font-size:11.5px;font-weight:700;cursor:pointer;}
+  .miniBtn.ghost{background:#fff;color:var(--navy);border:1px solid var(--line);}
+
+  .uploadGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+  .uploadTile{border:1.5px dashed var(--line);border-radius:11px;padding:16px 10px;text-align:center;cursor:pointer;transition:.15s;}
+  .uploadTile:hover{border-color:var(--orange);background:#FFF8F0;}
+  .uploadTile svg{width:22px;height:22px;color:var(--orange);margin-bottom:6px;}
+  .uploadTile span{display:block;font-size:11.5px;font-weight:600;}
+
+  .pageHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+  .pageHead h1{font-size:22px;margin:0;color:var(--navy);}
+  .pageHead p{font-size:12.5px;color:var(--sub);margin:4px 0 0;}
+
+  .filterBar{display:flex;gap:8px;margin-bottom:16px;}
+  .filterBar button{background:#fff;border:1px solid var(--line);padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600;color:var(--sub);cursor:pointer;}
+  .filterBar button.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+
+  .formGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .field{display:flex;flex-direction:column;gap:6px;}
+  .field label{font-size:12px;font-weight:600;color:var(--sub);}
+  .field input,.field select,.field textarea{border:1px solid var(--line);border-radius:8px;padding:9px 12px;font-size:13px;font-family:'Inter';color:var(--ink);background:#fff;}
+  .field.full{grid-column:1/-1;}
+  .toggleRow{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--line);}
+  .toggleRow:last-child{border-bottom:none;}
+  .toggleRow b{font-size:13px;display:block;}
+  .toggleRow span{font-size:11.5px;color:var(--sub);}
+  .swtch{width:38px;height:22px;border-radius:20px;background:var(--orange);position:relative;flex-shrink:0;cursor:pointer;}
+  .swtch::after{content:"";position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:#fff;}
+  .swtch.off{background:var(--line);}
+  .swtch.off::after{left:2px;right:auto;}
+
+  .progBar{height:8px;border-radius:4px;background:var(--bg);overflow:hidden;flex:1;}
+  .progBar i{display:block;height:100%;background:var(--orange);border-radius:4px;}
+
+  /* video player modal */
+  .modalBackdrop{display:none;position:fixed;inset:0;background:rgba(15,42,74,.65);z-index:100;align-items:center;justify-content:center;}
+  .modalBackdrop.on{display:flex;}
+  .videoModal{background:var(--card);border-radius:16px;width:640px;max-width:92vw;overflow:hidden;box-shadow:0 30px 60px rgba(0,0,0,.35);}
+  .playerStage{background:linear-gradient(135deg,var(--navy),var(--navy-2));height:320px;position:relative;display:flex;align-items:center;justify-content:center;}
+  .playerStage .bigPlay{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.14);display:flex;align-items:center;justify-content:center;cursor:pointer;border:1.5px solid rgba(255,255,255,.5);}
+  .playerStage .bigPlay svg{width:26px;height:26px;color:#fff;margin-left:3px;}
+  .playerStage .closeX{position:absolute;top:14px;right:16px;color:#fff;background:rgba(255,255,255,.12);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;border:none;}
+  .playerBar{position:absolute;left:16px;right:16px;bottom:14px;}
+  .playerBar .track{height:5px;border-radius:3px;background:rgba(255,255,255,.25);overflow:hidden;margin-bottom:8px;}
+  .playerBar .track i{display:block;height:100%;width:38%;background:var(--orange);}
+  .playerBar .ctrls{display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:11px;font-family:'IBM Plex Mono';}
+  .playerBar .ctrls .left{display:flex;align-items:center;gap:12px;}
+  .videoMeta{padding:16px 20px 20px;}
+  .videoMeta b{font-size:15px;display:block;margin-bottom:4px;}
+  .videoMeta span{font-size:12px;color:var(--sub);}
+  .videoMeta p{font-size:12.5px;color:var(--ink);margin:10px 0 0;line-height:1.5;}
+
+  /* submission upload modal */
+  .subModal{background:var(--card);border-radius:16px;width:460px;max-width:92vw;padding:26px;position:relative;box-shadow:0 30px 60px rgba(0,0,0,.35);}
+  .subModal .closeX2{position:absolute;top:14px;right:16px;background:var(--bg);width:28px;height:28px;border-radius:50%;border:none;font-size:14px;cursor:pointer;color:var(--sub);}
+  .subModal h3{font-size:18px;color:var(--navy);margin-bottom:4px;}
+  .subModal p.sub{font-size:12px;color:var(--sub);margin-bottom:18px;}
+  .dropZone{border:1.5px dashed var(--line);border-radius:12px;padding:24px;text-align:center;margin-bottom:14px;cursor:pointer;}
+  .dropZone:hover{border-color:var(--orange);background:#FFF8F0;}
+  .dropZone svg{width:26px;height:26px;color:var(--orange);margin-bottom:8px;}
+  .dropZone b{display:block;font-size:13px;}
+  .dropZone span{font-size:11px;color:var(--sub);}
+  .subSuccess{display:none;text-align:center;}
+  .subSuccess.on{display:block;}
+  .subSuccess .tick{width:52px;height:52px;border-radius:50%;background:#E7F7ED;color:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:24px;}
+
+  /* IDE */
+  .ideWrap{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;height:520px;}
+  .idePanel{background:#1E293B;border-radius:14px;overflow:hidden;display:flex;flex-direction:column;}
+  .ideTop{background:#111827;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;}
+  .ideTop select{background:#1E293B;color:#fff;border:1px solid #334155;border-radius:6px;padding:5px 10px;font-size:12px;}
+  .ideTop .dots{display:flex;gap:6px;}
+  .ideTop .dots span{width:10px;height:10px;border-radius:50%;}
+  .ideCode{flex:1;padding:16px;color:#D1E8FF;font-family:'IBM Plex Mono';font-size:12.5px;line-height:1.7;white-space:pre-wrap;overflow:auto;}
+  .ideCode .kw{color:#F472B6;} .ideCode .fn{color:#60A5FA;} .ideCode .str{color:#FDBA74;} .ideCode .cm{color:#64748B;}
+  .consolePanel{background:var(--bg);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;}
+  .consoleHead{padding:12px 16px;border-bottom:1px solid var(--line);font-size:12.5px;font-weight:700;display:flex;justify-content:space-between;align-items:center;}
+  .consoleBody{flex:1;padding:14px 16px;font-family:'IBM Plex Mono';font-size:12px;color:var(--ink);overflow:auto;}
+  .consoleBody .ok{color:var(--green);}
+  .ideActions{display:flex;gap:10px;margin-top:14px;}
+
+  /* leaderboard */
+  .lbRow{display:flex;align-items:center;gap:14px;padding:12px 6px;border-bottom:1px solid var(--line);}
+  .lbRow:last-child{border-bottom:none;}
+  .lbRow.me{background:#FFF8F0;border-radius:10px;}
+  .lbRank{width:30px;text-align:center;font-family:'Sora';font-weight:700;font-size:14px;color:var(--sub);}
+  .lbRank.top1{color:#D4AF37;} .lbRank.top2{color:#A0A0A0;} .lbRank.top3{color:#B5651D;}
+  .lbAvatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy-2));color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Sora';font-weight:700;font-size:13px;flex-shrink:0;}
+  .lbInfo{flex:1;}
+  .lbInfo b{font-size:13px;display:block;}
+  .lbInfo span{font-size:11px;color:var(--sub);}
+  .lbPts{font-family:'Sora';font-weight:700;color:var(--navy);}
+
+  /* certifications */
+  .certCard{background:linear-gradient(135deg,var(--navy),var(--navy-2));border-radius:16px;padding:22px;color:#fff;position:relative;overflow:hidden;}
+  .certCard::after{content:"";position:absolute;right:-30px;bottom:-30px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle, rgba(245,129,12,.35), transparent 70%);}
+  .certCard .badge2{width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:20px;}
+  .certCard h3{font-size:15.5px;margin-bottom:4px;}
+  .certCard span{font-size:11.5px;color:#B9CBE0;}
+  .certCard.locked{background:var(--bg);color:var(--sub);border:1.5px dashed var(--line);}
+  .certCard.locked .badge2{background:#fff;color:var(--sub);}
+  .certCard.locked span{color:var(--sub);}
+
+  /* calendar */
+  .calGrid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .calHead{font-size:10.5px;font-weight:700;color:var(--sub);text-align:center;padding-bottom:6px;text-transform:uppercase;}
+  .calCell{background:var(--bg);border:1px solid var(--line);border-radius:10px;min-height:78px;padding:6px;font-size:11px;}
+  .calCell.today{border-color:var(--orange);background:#FFF8F0;}
+  .calCell .dNum{font-weight:700;margin-bottom:4px;color:var(--ink);}
+  .calCell .ev{background:var(--navy);color:#fff;font-size:9.5px;padding:2px 5px;border-radius:4px;margin-bottom:2px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .calCell.empty{background:transparent;border:none;}
+
+  /* hamburger + mobile overlay */
+  .hamburger{display:none;background:none;border:none;padding:6px;margin-right:4px;cursor:pointer;color:var(--navy);flex-shrink:0;}
+  .hamburger svg{width:24px;height:24px;display:block;}
+  .sideClose{display:none;background:rgba(255,255,255,.1);border:none;color:#fff;width:30px;height:30px;border-radius:8px;font-size:16px;cursor:pointer;align-items:center;justify-content:center;}
+  .navOverlay{display:none;position:fixed;inset:0;background:rgba(15,42,74,.5);z-index:40;}
+  .navOverlay.on{display:block;}
+
+  /* MOBILE */
+  @media (max-width:860px){
+    .grid.g2,.grid.g3,.grid.g4{grid-template-columns:1fr;}
+    .formGrid{grid-template-columns:1fr;}
+    .ideWrap{grid-template-columns:1fr;height:auto;}
+    .idePanel{height:320px;}
+    .uploadGrid{grid-template-columns:1fr;}
+    .content{padding:18px 16px 60px;}
+    .topbar{padding:14px 16px;}
+    .filterBar{flex-wrap:wrap;}
+    table{display:block;overflow-x:auto;white-space:nowrap;}
+
+    .hamburger{display:block;}
+    .sideClose{display:flex;}
+    .sidebar{
+      position:fixed;top:0;left:0;height:100%;z-index:50;
+      transform:translateX(-100%);transition:transform .25s ease;
+      box-shadow:0 0 40px rgba(0,0,0,.35);overflow-y:auto;
+    }
+    .sidebar.open{transform:translateX(0);}
+  }
+</style>
+</head>
+<body>
+<div class="modalBackdrop" id="subModal">
+  <div class="subModal">
+    <button class="closeX2" onclick="closeSub()">✕</button>
+    <div id="subFormBody">
+      <h3 id="subTitle">Upload Submission</h3>
+      <p class="sub" id="subSubtitle">Attach your file for this task</p>
+      <div class="dropZone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16M4 12h16"/></svg>
+        <b>Click to choose a file</b><span>PDF, DOCX, ZIP, or code files up to 25MB</span>
+      </div>
+      <div class="field"><label>Notes (optional)</label><input type="text" placeholder="Add a comment for your teacher..."></div>
+      <button class="btn primaryBtn" style="width:100%;justify-content:center;" onclick="submitSubmission()">Submit</button>
+    </div>
+    <div class="subSuccess" id="subSuccess">
+      <div class="tick">✓</div>
+      <h3 style="text-align:center;">Submitted!</h3>
+      <p style="text-align:center;font-size:12.5px;color:var(--sub);margin-bottom:16px;">Your submission for <b id="subNameOut"></b> has been sent to your teacher for review.</p>
+      <button class="btn ghostBtn" style="width:100%;justify-content:center;" onclick="closeSub()">Done</button>
+    </div>
+  </div>
+</div>
+<div class="modalBackdrop" id="videoModal">
+  <div class="videoModal">
+    <div class="playerStage">
+      <button class="closeX" onclick="closeVideo()">✕</button>
+      <div class="bigPlay"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></div>
+      <div class="playerBar">
+        <div class="track"><i></i></div>
+        <div class="ctrls"><div class="left"><span>▶</span><span id="vmTime">16:02 / 42:10</span></div><span>⚙ 1x  ⛶</span></div>
+      </div>
+    </div>
+    <div class="videoMeta">
+      <b id="vmTitle">Session 13</b>
+      <span id="vmSub">Data Types · Uploaded 3 days ago</span>
+      <p id="vmDesc">Recorded live class covering the topic in full, including faculty explanation and student Q&A from the session.</p>
+    </div>
+  </div>
+</div>
+<div class="app">
+  <div class="navOverlay" id="navOverlay" onclick="closeNav()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" fill="none">
+        <path d="M20 4L37 12L20 20L3 12L20 4Z" fill="#F5810C"/>
+        <path d="M10 16.5V25C10 25 14 29 20 29C26 29 30 25 30 25V16.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="34" cy="14" r="1.6" fill="#FFA84D"/>
+      </svg>
+      <div class="txt"><b>Aditya Globals</b><br><span>LEARNING PLATFORM</span></div>
+      <button class="sideClose" onclick="closeNav()" style="margin-left:auto;" aria-label="Close menu">✕</button>
+    </div>
+    <div class="roleSwitch">
+      <button class="active" data-role="student">Student</button>
+      <button data-role="teacher">Teacher</button>
+      <button data-role="admin">Admin</button>
+    </div>
+    <div class="nav" id="nav"></div>
+    <div class="sideFoot">Prototype v0.3 · SR Infra Groups</div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:8px;min-width:0;">
+        <button class="hamburger" onclick="openNav()" aria-label="Open menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div style="min-width:0;"><h2 id="topTitle"></h2><div class="meta" id="topMeta"></div></div>
+      </div>
+      <div class="topRight">
+        <svg class="bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3a5 5 0 0 0-5 5v3.2c0 .5-.2 1-.5 1.4L5 15h14l-1.5-2.4a2 2 0 0 1-.5-1.4V8a5 5 0 0 0-5-5Z"/><path d="M9.5 18a2.5 2.5 0 0 0 5 0"/></svg>
+        <div class="avatar" id="avatarTxt"></div>
+      </div>
+    </div>
+    <div class="content" id="pageContent"></div>
+  </div>
+</div>
+
+<script>
+const I = {
+  file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h5"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 4v16M4 12h16"/></svg>',
+  bar:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M8 16V9M12 16V4M16 16v-6"/></svg>',
+  mcq:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M8 8h3v3H8zM13 8h3v3h-3zM8 13h3v3H8zM13 13h3v3h-3z"/></svg>',
+};
+function icoBox(icon,bg,fg){return `<div class="ico" style="background:${bg};color:${fg}">${icon}</div>`;}
+
+function openVideo(title, subject, duration, desc){
+  document.getElementById('vmTitle').textContent = title;
+  document.getElementById('vmSub').textContent = subject + " · " + duration + " total";
+  document.getElementById('vmDesc').textContent = desc || "Recorded live class covering the topic in full, including faculty explanation and student Q&A from the session.";
+  document.getElementById('vmTime').textContent = "16:02 / " + duration;
+  document.getElementById('videoModal').classList.add('on');
+}
+function closeVideo(){ document.getElementById('videoModal').classList.remove('on'); }
+
+function openSub(title, subtitle){
+  document.getElementById('subTitle').textContent = title || "Upload Submission";
+  document.getElementById('subSubtitle').textContent = subtitle || "Attach your file for this task";
+  document.getElementById('subFormBody').style.display = 'block';
+  document.getElementById('subSuccess').classList.remove('on');
+  document.getElementById('subNameOut').textContent = title || "";
+  document.getElementById('subModal').classList.add('on');
+}
+function closeSub(){ document.getElementById('subModal').classList.remove('on'); }
+function submitSubmission(){
+  document.getElementById('subFormBody').style.display = 'none';
+  document.getElementById('subSuccess').classList.add('on');
+}
+
+const navData = {
+  student: [
+    {key:'dashboard', icon:'🏠', label:'Dashboard'},
+    {key:'live', icon:'🔴', label:'Live Classes'},
+    {key:'calendar', icon:'📅', label:'Calendar'},
+    {key:'attendance', icon:'🗓️', label:'Attendance'},
+    {key:'notes', icon:'📝', label:'Notes & Homework'},
+    {key:'projects', icon:'🚀', label:'Projects'},
+    {key:'videos', icon:'🎬', label:'Recorded Videos'},
+    {key:'syllabus', icon:'📘', label:'Syllabus'},
+    {key:'assessments', icon:'🧪', label:'Assessments'},
+    {key:'mcq', icon:'❓', label:'MCQ Practice'},
+    {key:'ide', icon:'💻', label:'Code IDE'},
+    {key:'reports', icon:'📊', label:'My Test Reports'},
+    {key:'leaderboard', icon:'🏆', label:'Leaderboard'},
+    {key:'certifications', icon:'🎓', label:'Certifications'},
+    {key:'notifications', icon:'🔔', label:'Notifications'},
+  ],
+  teacher: [
+    {key:'dashboard', icon:'🏠', label:'Dashboard'},
+    {key:'schedule', icon:'🗓️', label:'Schedule'},
+    {key:'attendance', icon:'✅', label:'Attendance'},
+    {key:'upload', icon:'📤', label:'Upload Content'},
+    {key:'syllabus', icon:'📘', label:'Syllabus'},
+    {key:'students', icon:'👥', label:'My Students'},
+    {key:'performance', icon:'📊', label:'Performance'},
+    {key:'grading', icon:'✅', label:'Grading Queue'},
+    {key:'communication', icon:'💬', label:'Class Communication'},
+  ],
+  admin: [
+    {key:'overview', icon:'🏠', label:'Overview'},
+    {key:'users', icon:'👤', label:'User Management'},
+    {key:'batches', icon:'🏫', label:'Batches'},
+    {key:'subjects', icon:'📖', label:'Subject Management'},
+    {key:'syllabus', icon:'📘', label:'Syllabus'},
+    {key:'library', icon:'📚', label:'Content Library'},
+    {key:'attendance', icon:'✅', label:'Attendance Analytics'},
+    {key:'reports', icon:'📈', label:'School Reports'},
+    {key:'payments', icon:'💳', label:'Payments'},
+    {key:'auditlogs', icon:'🛡️', label:'Audit Logs'},
+    {key:'settings', icon:'⚙️', label:'Settings'},
+  ]
+};
+const topMeta = {
+  student:{title:"Good afternoon, Meher 👋", meta:"Class 9 · Full Stack Foundations Batch", av:"M"},
+  teacher:{title:"Welcome back, Kiran 👋", meta:"4 Batches · 118 Students", av:"K"},
+  admin:{title:"Platform Overview", meta:"Aditya Globals · Andhra Pradesh Region", av:"A"}
+};
+const pageTitles = {
+  student:{dashboard:"Dashboard", live:"Live Classes", calendar:"Calendar", attendance:"Attendance", notes:"Notes & Homework", projects:"Projects", videos:"Recorded Videos", syllabus:"Syllabus", assessments:"Assessments", mcq:"MCQ Practice", ide:"Code IDE", reports:"My Test Reports", leaderboard:"Leaderboard", certifications:"Certifications", notifications:"Notifications"},
+  teacher:{dashboard:"Dashboard", schedule:"Schedule", attendance:"Attendance", upload:"Upload Content", syllabus:"Syllabus", students:"My Students", performance:"Performance", grading:"Grading Queue", communication:"Class Communication"},
+  admin:{overview:"Overview", users:"User Management", batches:"Batches", subjects:"Subject Management", syllabus:"Syllabus", library:"Content Library", attendance:"Attendance Analytics", reports:"School Reports", payments:"Payments", auditlogs:"Audit Logs", settings:"Settings"}
+};
+
+let state = { role:'student', page:'dashboard' };
+
+function statTile(n,l,d,trend){
+  return `<div class="card stat"><div class="l">${l}</div><div class="n">${n}</div><div class="d ${trend||''}">${d||''}</div></div>`;
+}
+function pageHead(title, sub, actionLabel){
+  return `<div class="pageHead"><div><h1>${title}</h1><p>${sub}</p></div>${actionLabel? `<button class="primaryBtn">${actionLabel}</button>`:''}</div>`;
+}
+function table(headers, rows){
+  return `<table><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</table>`;
+}
+function progRow(label, pct, color){
+  return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+    <div style="width:90px;font-size:12px;font-weight:600;">${label}</div>
+    <div class="progBar"><i style="width:${pct}%;background:${color||'var(--orange)'}"></i></div>
+    <div style="width:40px;text-align:right;font-size:11.5px;font-weight:700;">${pct}%</div>
+  </div>`;
+}
+
+/* STUDENT PAGES */
+function studentDashboard(){
+  return `
+  <div class="grid g2" style="margin-bottom:18px;">
+    <div class="card liveCard">
+      <span class="liveTag"><span class="dot"></span> LIVE IN 12 MIN</span>
+      <h2>Python Functions & Loops — Session 14</h2>
+      <div class="sub">Faculty: Mr. Kiran Kumar · 4:00 PM – 5:15 PM</div>
+      <button class="joinBtn">Join Live Class →</button>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:16px;">
+      <div class="ring-wrap"><svg width="88" height="88"><circle class="ring-bg" cx="44" cy="44" r="38"/><circle class="ring-fg" cx="44" cy="44" r="38" stroke-dasharray="238.7" stroke-dashoffset="62"/></svg><div class="ring-txt"><b>74%</b><span>COURSE</span></div></div>
+      <div><div style="font-size:12.5px;color:var(--sub);font-weight:600;">Overall Progress</div>
+      <div style="font-family:'Sora';font-size:15px;margin:2px 0;">Full Stack Foundations</div>
+      <div style="font-size:11.5px;color:var(--sub);">🔥 12-day streak · 3 modules left</div></div>
+    </div>
+  </div>
+  <div class="grid g2" style="margin-bottom:18px;">
+    <div class="card"><h3><span class="lbl">📋 Today's Notes & Homework</span><a onclick="go('student','notes')">View all</a></h3>
+      <div class="row">${icoBox(I.file,'#FFF1E0','#F5810C')}<div class="txt"><b>Loops & Iteration — Class Notes</b><span>Uploaded today, 4:10 PM</span></div><span class="badge new">NEW</span></div>
+      <div class="row">${icoBox(I.check,'#EAF1FB','#16385E')}<div class="txt"><b>Homework 14 — 10 Practice Problems</b><span>Due tomorrow, 9:00 AM</span></div><span class="badge due">DUE</span></div>
+      <div class="row">${icoBox(I.check,'#E7F7ED','#16A34A')}<div class="txt"><b>Homework 13 — Variables & Data Types</b><span>Submitted · Reviewed</span></div><span class="badge done">DONE</span></div>
+    </div>
+    <div class="card"><h3><span class="lbl">🎬 Recorded Videos</span><a onclick="go('student','videos')">Library</a></h3>
+      <div class="vgrid">
+        <div class="vthumb" onclick="openVideo('Session 13','Data Types','42:10')"><div class="tb">${I.play}<span class="dur">42:10</span></div><div class="info"><b>Session 13</b><span>Data Types</span></div></div>
+        <div class="vthumb" onclick="openVideo('Session 12','Variables','38:55')"><div class="tb">${I.play}<span class="dur">38:55</span></div><div class="info"><b>Session 12</b><span>Variables</span></div></div>
+        <div class="vthumb" onclick="openVideo('Session 11','Intro to Python','45:20')"><div class="tb">${I.play}<span class="dur">45:20</span></div><div class="info"><b>Session 11</b><span>Intro to Python</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3><span class="lbl">📊 Test Performance — Last 6 Tests</span><a onclick="go('student','reports')">Full report</a></h3>
+      <div class="bars">
+        ${[62,70,68,81,77,88].map((v,i)=>`<div class="bar"><div class="val">${v}%</div><div class="fill" style="height:${v*0.9}%;"></div><div class="lab">T${i+1}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="card"><h3><span class="lbl">✏️ Quick MCQ Practice</span><a onclick="go('student','mcq')">More sets</a></h3>
+      <div class="mcq" style="margin-bottom:0;"><div class="q">Q. What does <span class="mono">len()</span> return for a Python list?</div>
+        <div class="opt"><span class="let">A</span> Memory address</div>
+        <div class="opt correct"><span class="let">B</span> Number of elements</div>
+        <div class="opt"><span class="let">C</span> Data type</div>
+        <div class="opt"><span class="let">D</span> First element</div>
+      </div>
+    </div>
+  </div>`;
+}
+function studentLive(){
+  const upcoming = [
+    ["Today, 4:00 PM","Python Functions & Loops — Session 14","Mr. Kiran Kumar","Join"],
+    ["Tomorrow, 4:00 PM","File Handling — Session 15","Mr. Kiran Kumar","Remind me"],
+    ["Wed, 6:30 PM","Doubt Clearing Session","Ms. Priya Sharma","Remind me"],
+  ];
+  const past = [
+    ["Mon, 4:00 PM","Data Types — Session 13","42:10"],
+    ["Fri, 4:00 PM","Variables — Session 12","38:55"],
+    ["Wed, 4:00 PM","Intro to Python — Session 11","45:20"],
+  ];
+  return pageHead("Live Classes","All your scheduled and past live sessions in one place") + `
+  <div class="card" style="margin-bottom:18px;"><h3><span class="lbl">Upcoming</span></h3>
+    ${upcoming.map(([t,c,f,s])=>`<div class="schedRow"><div class="schedTime">${t}</div><div class="txt"><b>${c}</b><span>${f}</span></div><button class="miniBtn">${s}</button></div>`).join('')}
+  </div>
+  <div class="card"><h3><span class="lbl">Past sessions</span></h3>
+    ${past.map(([t,c,d])=>`<div class="schedRow"><div class="schedTime">${t}</div><div class="txt"><b>${c}</b><span>Duration: ${d}</span></div><button class="miniBtn ghost" onclick="openVideo('${c}','Live class recording','${d}')">Watch recording</button></div>`).join('')}
+  </div>`;
+}
+function studentNotes(){
+  const rows = [
+    ["Loops & Iteration","Notes","Today, 4:10 PM","<span class='badge new'>NEW</span>","<button class='miniBtn ghost'>View</button>"],
+    ["Homework 14 — 10 Practice Problems","Homework","Due tomorrow, 9:00 AM","<span class='badge due'>DUE</span>","<button class='miniBtn' onclick=\"openSub('Homework 14','10 Practice Problems — upload your solution file')\">Upload</button>"],
+    ["Homework 13 — Variables & Data Types","Homework","Submitted","<span class='badge done'>DONE</span>","<button class='miniBtn ghost'>View submission</button>"],
+    ["Data Types","Notes","3 days ago","<span class='badge done'>VIEWED</span>","<button class='miniBtn ghost'>View</button>"],
+    ["Homework 12 — Print & Input","Homework","Submitted","<span class='badge done'>DONE</span>","<button class='miniBtn ghost'>View submission</button>"],
+    ["Variables in Python","Notes","5 days ago","<span class='badge done'>VIEWED</span>","<button class='miniBtn ghost'>View</button>"],
+    ["Homework 11 — Setup Exercises","Homework","Submitted · Reviewed","<span class='badge done'>DONE</span>","<button class='miniBtn ghost'>View submission</button>"],
+  ];
+  return pageHead("Notes & Homework","Everything uploaded by your faculty, in order") + `
+  <div class="filterBar"><button class="active">All</button><button>Notes</button><button>Homework</button><button>Due</button></div>
+  <div class="card">${table(["Title","Type","Date","Status","Action"], rows)}</div>`;
+}
+function studentVideos(){
+  const vids = [["Session 13","Data Types","42:10"],["Session 12","Variables","38:55"],["Session 11","Intro to Python","45:20"],
+    ["Session 10","Setup & Tools","30:05"],["Session 9","Course Orientation","22:40"],["Session 8","Debugging Basics","36:15"],
+    ["Session 7","Operators","33:50"],["Session 6","Conditionals","40:22"]];
+  return pageHead("Recorded Videos","Rewatch any past class, anytime") + `
+  <div class="card"><div class="vgrid">
+    ${vids.map(([t,s,d])=>`<div class="vthumb" onclick="openVideo('${t}','${s}','${d}')"><div class="tb">${I.play}<span class="dur">${d}</span></div><div class="info"><b>${t}</b><span>${s}</span></div></div>`).join('')}
+  </div></div>`;
+}
+function studentReports(){
+  return pageHead("My Test Reports","Track your scores and spot weak topics early") + `
+  <div class="card" style="margin-bottom:18px;"><h3><span class="lbl">Score trend — last 6 tests</span></h3>
+    <div class="bars">${[62,70,68,81,77,88].map((v,i)=>`<div class="bar"><div class="val">${v}%</div><div class="fill" style="height:${v*0.9}%;"></div><div class="lab">T${i+1}</div></div>`).join('')}</div>
+  </div>
+  <div class="card"><h3><span class="lbl">Performance by topic</span></h3>
+    ${progRow("Variables",92,"#16A34A")}${progRow("Data Types",84,"#16A34A")}${progRow("Loops",68,"#F5810C")}${progRow("Functions",55,"#E24545")}${progRow("File Handling",74,"#F5810C")}
+  </div>`;
+}
+function studentMcq(){
+  const sets = [["Loops & Iteration","10 questions","Medium"],["Functions Basics","8 questions","Easy"],["Data Types","12 questions","Easy"],["File Handling","10 questions","Hard"]];
+  return pageHead("MCQ Practice","Bite-sized quizzes to reinforce every topic") + `
+  <div class="grid g4" style="margin-bottom:18px;">
+    ${sets.map(([t,q,d])=>`<div class="card" style="cursor:pointer;"><div style="font-size:13px;font-weight:700;margin-bottom:6px;">${t}</div><div style="font-size:11.5px;color:var(--sub);">${q} · ${d}</div></div>`).join('')}
+  </div>
+  <div class="card"><h3><span class="lbl">Sample question</span></h3>
+    <div class="mcq" style="margin-bottom:0;"><div class="q">Q. What does <span class="mono">len()</span> return for a Python list?</div>
+      <div class="opt"><span class="let">A</span> Memory address</div>
+      <div class="opt correct"><span class="let">B</span> Number of elements</div>
+      <div class="opt"><span class="let">C</span> Data type</div>
+      <div class="opt"><span class="let">D</span> First element</div>
+    </div>
+  </div>`;
+}
+
+function studentProjects(){
+  const proj = [
+    ["Write a business plan","Class 9 Stage Project","Due Jul 20, 2026","Not submitted","due"],
+    ["Launch a website","Class 9 Stage Project","Due Aug 5, 2026","Not submitted","due"],
+    ["Run a small marketing campaign","Class 9 Stage Project","Submitted","Reviewed · 88%","done"],
+    ["Python Mini Project — To-Do App","Full Stack Foundations","Due Jul 15, 2026","Not submitted","due"],
+  ];
+  return pageHead("Projects","Hands-on projects from your syllabus and coding track") + `
+  <div class="grid g2">
+    ${proj.map(([t,c,d,s,type])=>`<div class="card">
+      <h3><span class="lbl">${t}</span>${type==='due'?"<span class='badge due'>DUE</span>":"<span class='badge done'>DONE</span>"}</h3>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:4px;">${c}</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:16px;">${d} · ${s}</div>
+      ${type==='due'
+        ? `<button class="primaryBtn" onclick="openSub('${t}','${c} — upload your project files')">Upload Project</button>`
+        : `<button class="ghostBtn">View Feedback</button>`}
+    </div>`).join('')}
+  </div>`;
+}
+
+function studentAssessments(){
+  const rows = [
+    ["Unit Test 3 — Loops & Functions","Jul 12, 2026, 10:00 AM","45 min","Upcoming","<button class='miniBtn'>Set reminder</button>"],
+    ["Mid-Term Exam","Jul 28, 2026, 10:00 AM","90 min","Upcoming","<button class='miniBtn'>Set reminder</button>"],
+    ["Unit Test 2 — Data Types","Jun 20, 2026","30 min","Completed · 81%","<button class='miniBtn ghost'>View result</button>"],
+    ["Unit Test 1 — Variables","Jun 5, 2026","30 min","Completed · 92%","<button class='miniBtn ghost'>View result</button>"],
+  ];
+  return pageHead("Assessments","Formal tests and exams — separate from daily MCQ practice") + `
+  <div class="filterBar"><button class="active">All</button><button>Upcoming</button><button>Completed</button></div>
+  <div class="card">${table(["Assessment","Date","Duration","Status","Action"], rows)}</div>`;
+}
+
+function studentIde(){
+  return pageHead("Code IDE","Write, run, and submit code for your coding assignments") + `
+  <div class="card" style="margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:13px;font-weight:700;">Assignment: Loops & Iteration — Print multiplication table</div>
+    <span class="badge due">DUE TOMORROW</span>
+  </div>
+  <div class="ideWrap">
+    <div class="idePanel">
+      <div class="ideTop">
+        <div class="dots"><span style="background:#EF4444;"></span><span style="background:#F59E0B;"></span><span style="background:#22C55E;"></span></div>
+        <select><option>Python 3</option><option>JavaScript</option><option>Java</option></select>
+      </div>
+      <div class="ideCode"><span class="kw">def</span> <span class="fn">multiplication_table</span>(n):
+    <span class="kw">for</span> i <span class="kw">in</span> range(1, 11):
+        print(<span class="str">f"{n} x {i} = {n*i}"</span>)
+
+<span class="cm"># call the function</span>
+multiplication_table(5)</div>
+    </div>
+    <div class="consolePanel">
+      <div class="consoleHead"><span>Console Output</span><span style="color:var(--sub);font-weight:500;">Python 3.11</span></div>
+      <div class="consoleBody">
+        <div class="ok">5 x 1 = 5</div><div class="ok">5 x 2 = 10</div><div class="ok">5 x 3 = 15</div>
+        <div class="ok">5 x 4 = 20</div><div class="ok">5 x 5 = 25</div><div class="ok">5 x 6 = 30</div>
+        <div class="ok">5 x 7 = 35</div><div class="ok">5 x 8 = 40</div><div class="ok">5 x 9 = 45</div><div class="ok">5 x 10 = 50</div>
+        <div style="margin-top:10px;color:var(--sub);">Process finished — exit code 0</div>
+      </div>
+    </div>
+  </div>
+  <div class="ideActions">
+    <button class="primaryBtn">▶ Run Code</button>
+    <button class="ghostBtn" onclick="openSub('Loops & Iteration Assignment','Submit your code file for grading')">Submit Assignment</button>
+  </div>`;
+}
+
+function studentLeaderboard(){
+  const board = [
+    [1,"Divya Prakash","Batch A","1,840 pts"],[2,"Ananya R.","Batch B","1,795 pts"],[3,"Karthik V.","Batch C","1,760 pts"],
+    [4,"Sneha K.","Batch B","1,690 pts"],[5,"Meher Reddy","Batch B","1,655 pts"],[6,"Vikram S.","Batch B","1,600 pts"],
+    [7,"Arjun N.","Batch A","1,510 pts"],[8,"Rahul M.","Batch B","1,340 pts"],
+  ];
+  return pageHead("Leaderboard","Class-level ranking across all onboarded students") + `
+  <div class="card">
+    ${board.map(([r,name,batch,pts])=>{
+      const isMe = name==="Meher Reddy";
+      const rankClass = r===1?"top1":r===2?"top2":r===3?"top3":"";
+      const medal = r<=3 ? ["🥇","🥈","🥉"][r-1] : r;
+      return `<div class="lbRow ${isMe?'me':''}">
+        <div class="lbRank ${rankClass}">${medal}</div>
+        <div class="lbAvatar">${name.split(' ').map(n=>n[0]).join('').slice(0,2)}</div>
+        <div class="lbInfo"><b>${name}${isMe?' (You)':''}</b><span>${batch}</span></div>
+        <div class="lbPts">${pts}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function studentCertifications(){
+  const earned = [["Python Fundamentals","Completed Jun 2026","🐍"],["Business Foundations — Class 8","Completed May 2026","💼"]];
+  const locked = [["Full Stack Foundations","3 modules remaining","🔒"],["Business Creation — Class 9","In progress","🔒"]];
+  return pageHead("Certifications","Certificates earned and in progress") + `
+  <div class="grid g2" style="margin-bottom:20px;">
+    ${earned.map(([t,d,ic])=>`<div class="certCard"><div class="badge2">${ic}</div><h3>${t}</h3><span>${d}</span>
+      <div style="margin-top:14px;"><button class="ghostBtn" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.4);">Download Certificate</button></div>
+    </div>`).join('')}
+  </div>
+  <h3 style="font-size:14px;margin-bottom:12px;color:var(--sub);">IN PROGRESS</h3>
+  <div class="grid g2">
+    ${locked.map(([t,d,ic])=>`<div class="certCard locked"><div class="badge2">${ic}</div><h3>${t}</h3><span>${d}</span></div>`).join('')}
+  </div>`;
+}
+
+function studentCalendar(){
+  const events = {3:["Live: Loops"],5:["Homework due"],7:["Live: Functions"],10:["Live: Doubt clearing"],12:["Unit Test 3"],14:["Live: File Handling"],17:["Live: Loops"],19:["Project due"],21:["Live: Functions"]};
+  const daysInMonth = 31, startOffset = 2; // July 2026 starts on Wed
+  let cells = "";
+  for(let i=0;i<startOffset;i++) cells += `<div class="calCell empty"></div>`;
+  for(let d=1; d<=daysInMonth; d++){
+    const isToday = d===6;
+    const evs = events[d] || [];
+    cells += `<div class="calCell ${isToday?'today':''}"><div class="dNum">${d}</div>${evs.map(e=>`<span class="ev">${e}</span>`).join('')}</div>`;
+  }
+  return pageHead("Calendar","Your class schedule for July 2026") + `
+  <div class="card">
+    <div class="calGrid" style="margin-bottom:8px;">
+      ${["SUN","MON","TUE","WED","THU","FRI","SAT"].map(d=>`<div class="calHead">${d}</div>`).join('')}
+    </div>
+    <div class="calGrid">${cells}</div>
+  </div>`;
+}
+
+
+function studentAttendance(){
+  const rows = [
+    ["Jul 5, 2026","Python Functions & Loops","Present"],
+    ["Jul 3, 2026","Data Types","Present"],
+    ["Jul 1, 2026","Variables","Absent"],
+    ["Jun 29, 2026","Intro to Python","Present"],
+    ["Jun 27, 2026","Setup & Tools","Late"],
+    ["Jun 25, 2026","Course Orientation","Present"],
+  ];
+  const pillFor = s => s==="Present" ? "<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Present</span>"
+    : s==="Absent" ? "<span class='pill' style='background:#FDEBEB;color:#E24545;'>Absent</span>"
+    : "<span class='pill' style='background:#FFF1E0;color:#F5810C;'>Late</span>";
+  return pageHead("Attendance","Your live class attendance record") + `
+  <div class="grid g4" style="margin-bottom:18px;">
+    ${statTile("92%","Overall Attendance","Above 85% requirement","up")}
+    ${statTile("23","Classes Attended","Out of 25 this term")}
+    ${statTile("1","Absences","This term")}
+    ${statTile("1","Late Arrivals","This term")}
+  </div>
+  <div class="card">${table(["Date","Class","Status"], rows.map(r=>[r[0],r[1],pillFor(r[2])]))}</div>`;
+}
+function studentNotifications(){
+  const items = [
+    ["🔴","Live class starting in 15 minutes","Python Functions & Loops · Session 14","Just now","new"],
+    ["📝","New homework assigned","Homework 14 — 10 Practice Problems, due tomorrow","2 hours ago","new"],
+    ["📊","Test result published","You scored 88% in Test 6","Yesterday","done"],
+    ["🎬","New recording available","Session 13 — Data Types is ready to watch","2 days ago","done"],
+    ["🗓️","Attendance marked","You were marked Late for Setup & Tools session","5 days ago","done"],
+    ["💳","Fee reminder","Term fee payment due in 5 days","5 days ago","due"],
+  ];
+  return pageHead("Notifications","Everything that needs your attention") + `
+  <div class="filterBar"><button class="active">All</button><button>Unread</button><button>Classes</button><button>Homework</button></div>
+  <div class="card">
+    ${items.map(([ic,t,d,time,tag])=>`<div class="row"><div class="ico" style="background:var(--bg);font-size:16px;">${ic}</div><div class="txt"><b>${t}</b><span>${d} · ${time}</span></div><span class="badge ${tag==='new'?'new':tag==='due'?'due':'done'}">${tag==='new'?'NEW':tag==='due'?'DUE':'READ'}</span></div>`).join('')}
+  </div>`;
+}
+
+function teacherDashboard(){
+  return `
+  <div class="grid g4" style="margin-bottom:18px;">
+    ${statTile("4","Batches Handled","↑ 1 new this month","up")}
+    ${statTile("118","Total Students","↑ 12 this month","up")}
+    ${statTile("73%","Avg. Test Score","↑ 4% vs last month","up")}
+    ${statTile("9","Pending Grading","Needs attention","down")}
+  </div>
+  <div class="grid g2" style="margin-bottom:18px;">
+    <div class="card"><h3><span class="lbl">🗓️ Today's Schedule</span><a onclick="go('teacher','schedule')">Full calendar</a></h3>
+      <div class="schedRow"><div class="schedTime">2:00 PM</div><div class="txt"><b>Batch A — Arrays & Strings</b><span>32 students enrolled</span></div><button class="miniBtn">Start</button></div>
+      <div class="schedRow"><div class="schedTime">4:00 PM</div><div class="txt"><b>Batch B — Functions & Loops</b><span>28 students enrolled</span></div><button class="miniBtn">Start</button></div>
+      <div class="schedRow"><div class="schedTime">6:30 PM</div><div class="txt"><b>Batch C — Doubt Clearing</b><span>41 students enrolled</span></div><button class="miniBtn">Start</button></div>
+    </div>
+    <div class="card"><h3><span class="lbl">📤 Upload Content</span><a onclick="go('teacher','upload')">Open uploader</a></h3>
+      <div class="uploadGrid">
+        <div class="uploadTile" onclick="go('teacher','upload')">${I.file}<span>Class Notes</span></div>
+        <div class="uploadTile" onclick="go('teacher','upload')">${I.check}<span>Homework</span></div>
+        <div class="uploadTile" onclick="go('teacher','upload')">${I.play}<span>Recording</span></div>
+        <div class="uploadTile" onclick="go('teacher','upload')">${I.mcq}<span>MCQ Test</span></div>
+        <div class="uploadTile" onclick="go('teacher','schedule')">${I.plus}<span>New Batch</span></div>
+        <div class="uploadTile" onclick="go('teacher','upload')">${I.bar}<span>Announcement</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card"><h3><span class="lbl">👥 Student Performance — Batch B</span><a onclick="go('teacher','students')">All batches</a></h3>
+    ${table(["Student","Attendance","Last Test","Homework","Status"],[
+      ["Ananya R.","96%","92%","10/10","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>On Track</span>"],
+      ["Vikram S.","88%","78%","8/10","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>On Track</span>"],
+      ["Rahul M.","62%","54%","4/10","<span class='pill' style='background:#FFF1E0;color:#F5810C;'>At Risk</span>"],
+      ["Sneha K.","91%","85%","9/10","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>On Track</span>"],
+    ])}
+  </div>`;
+}
+function teacherSchedule(){
+  const days = [
+    ["Monday",[["2:00 PM","Batch A — Arrays & Strings","32 students"],["4:00 PM","Batch B — Functions & Loops","28 students"]]],
+    ["Tuesday",[["4:00 PM","Batch B — Functions & Loops","28 students"],["6:30 PM","Batch C — Doubt Clearing","41 students"]]],
+    ["Wednesday",[["2:00 PM","Batch A — Arrays & Strings","32 students"]]],
+  ];
+  return pageHead("Schedule","This week's classes across all your batches","+ Schedule class") +
+  days.map(([d,rows])=>`<div class="card" style="margin-bottom:16px;"><h3><span class="lbl">${d}</span></h3>
+    ${rows.map(([t,c,n])=>`<div class="schedRow"><div class="schedTime">${t}</div><div class="txt"><b>${c}</b><span>${n}</span></div><button class="miniBtn">Start</button></div>`).join('')}
+  </div>`).join('');
+}
+function teacherUpload(){
+  return pageHead("Upload Content","Add notes, homework, recordings, or a new MCQ test") + `
+  <div class="card" style="margin-bottom:18px;">
+    <div class="formGrid">
+      <div class="field"><label>Content type</label><select><option>Class Notes</option><option>Homework</option><option>Recorded Video</option><option>MCQ Test</option></select></div>
+      <div class="field"><label>Batch</label><select><option>Batch A</option><option>Batch B</option><option>Batch C</option></select></div>
+      <div class="field full"><label>Title</label><input type="text" placeholder="e.g. Loops & Iteration — Class Notes"></div>
+      <div class="field full"><label>File</label><input type="text" placeholder="Choose file to upload..."></div>
+    </div>
+    <div style="margin-top:16px;"><button class="primaryBtn">Upload</button></div>
+  </div>
+  <div class="card"><h3><span class="lbl">Recent uploads</span></h3>
+    ${table(["Title","Type","Batch","Uploaded"],[
+      ["Loops & Iteration","Notes","Batch B","Today, 4:10 PM"],
+      ["Homework 14","Homework","Batch B","Today, 2:30 PM"],
+      ["Session 13 Recording","Video","Batch A","Yesterday"],
+      ["Functions Quiz","MCQ Test","Batch A","2 days ago"],
+    ])}
+  </div>`;
+}
+function teacherStudents(){
+  return pageHead("My Students","Full roster across all your batches") + `
+  <div class="filterBar"><button class="active">All batches</button><button>Batch A</button><button>Batch B</button><button>Batch C</button></div>
+  <div class="card">${table(["Student","Batch","Attendance","Avg Score","Status"],[
+    ["Ananya R.","Batch B","96%","92%","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>On Track</span>"],
+    ["Vikram S.","Batch B","88%","78%","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>On Track</span>"],
+    ["Rahul M.","Batch B","62%","54%","<span class='pill' style='background:#FFF1E0;color:#F5810C;'>At Risk</span>"],
+    ["Sneha K.","Batch B","91%","85%","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>On Track</span>"],
+    ["Arjun N.","Batch A","74%","69%","<span class='pill' style='background:#FFF1E0;color:#F5810C;'>At Risk</span>"],
+    ["Divya P.","Batch A","98%","95%","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>On Track</span>"],
+    ["Karthik V.","Batch C","81%","76%","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>On Track</span>"],
+  ])}</div>`;
+}
+function teacherPerformance(){
+  return pageHead("Performance","Batch-wise trends and where students need help") + `
+  <div class="card" style="margin-bottom:18px;"><h3><span class="lbl">Average score by batch</span></h3>
+    <div class="bars">${[["A",81],["B",73],["C",85]].map(([l,v])=>`<div class="bar"><div class="val">${v}%</div><div class="fill" style="height:${v*0.9}%;"></div><div class="lab">Batch ${l}</div></div>`).join('')}</div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h3><span class="lbl">Top performers</span></h3>${table(["Student","Score"],[["Divya P.","95%"],["Ananya R.","92%"],["Sneha K.","85%"]])}</div>
+    <div class="card"><h3><span class="lbl">Needs attention</span></h3>${table(["Student","Score"],[["Rahul M.","54%"],["Arjun N.","69%"]])}</div>
+  </div>`;
+}
+function teacherGrading(){
+  return pageHead("Grading Queue","Pending submissions waiting for review") + `
+  <div class="card">${table(["Student","Assignment","Batch","Submitted","Action"],[
+    ["Rahul M.","Homework 14","Batch B","Today, 9:15 AM","<button class='miniBtn'>Grade</button>"],
+    ["Arjun N.","Homework 14","Batch A","Today, 8:50 AM","<button class='miniBtn'>Grade</button>"],
+    ["Karthik V.","Loops Quiz","Batch C","Yesterday","<button class='miniBtn'>Grade</button>"],
+    ["Divya P.","Homework 13","Batch A","2 days ago","<button class='miniBtn'>Grade</button>"],
+    ["Sneha K.","Loops Quiz","Batch B","2 days ago","<button class='miniBtn'>Grade</button>"],
+    ["Vikram S.","Homework 14","Batch B","2 days ago","<button class='miniBtn'>Grade</button>"],
+    ["Ananya R.","Homework 14","Batch B","3 days ago","<button class='miniBtn'>Grade</button>"],
+  ])}</div>`;
+}
+
+function teacherAttendance(){
+  const students = [
+    ["Ananya R.","Present"],["Vikram S.","Present"],["Rahul M.","Absent"],["Sneha K.","Present"],
+    ["Arjun N.","Late"],["Divya P.","Present"],["Karthik V.","Present"],
+  ];
+  const pillFor = s => s==="Present" ? "background:#E7F7ED;color:#16A34A;" : s==="Absent" ? "background:#FDEBEB;color:#E24545;" : "background:#FFF1E0;color:#F5810C;";
+  return pageHead("Attendance","Mark and review attendance for today's classes","Save attendance") + `
+  <div class="filterBar"><button class="active">Batch B — 4:00 PM</button><button>Batch A — 2:00 PM</button><button>Batch C — 6:30 PM</button></div>
+  <div class="card">
+    ${students.map(([n,s])=>`<div class="row"><div class="txt"><b>${n}</b></div>
+      <button class="miniBtn ghost" style="${pillFor('Present')==pillFor(s)?'':''}${s==='Present'?'background:var(--navy);color:#fff;':''}">Present</button>
+      <button class="miniBtn ghost" style="margin-left:8px;${s==='Absent'?'background:var(--navy);color:#fff;':''}">Absent</button>
+      <button class="miniBtn ghost" style="margin-left:8px;${s==='Late'?'background:var(--navy);color:#fff;':''}">Late</button>
+    </div>`).join('')}
+  </div>`;
+}
+function teacherCommunication(){
+  return pageHead("Class Communication","Send announcements and messages to your batches") + `
+  <div class="card" style="margin-bottom:18px;">
+    <div class="formGrid">
+      <div class="field"><label>Batch</label><select><option>Batch A</option><option>Batch B</option><option>Batch C</option><option>All Batches</option></select></div>
+      <div class="field"><label>Send via</label><select><option>In-app</option><option>SMS</option><option>Email</option></select></div>
+      <div class="field full"><label>Message</label><textarea rows="3" placeholder="e.g. Tomorrow's class is rescheduled to 5:00 PM"></textarea></div>
+    </div>
+    <div style="margin-top:16px;"><button class="primaryBtn">Send Announcement</button></div>
+  </div>
+  <div class="card"><h3><span class="lbl">Recent announcements</span></h3>
+    <div class="row">${icoBox(I.bar,'#EAF1FB','#16385E')}<div class="txt"><b>Homework 14 uploaded — please review</b><span>Batch B · Today, 2:30 PM</span></div></div>
+    <div class="row">${icoBox(I.bar,'#FFF1E0','#F5810C')}<div class="txt"><b>Class rescheduled to 4:30 PM tomorrow</b><span>Batch A · Yesterday</span></div></div>
+    <div class="row">${icoBox(I.bar,'#E7F7ED','#16A34A')}<div class="txt"><b>Great scores this week — keep it up!</b><span>Batch C · 3 days ago</span></div></div>
+  </div>`;
+}
+
+function adminOverview(){
+  return `
+  <div class="grid g4" style="margin-bottom:18px;">
+    <div class="card stat" style="background:var(--navy);border:none;"><div class="l" style="color:#B9CBE0;">Total Students</div><div class="n" style="color:#fff;">1,248</div><div class="d up">↑ 6.2% MoM</div></div>
+    <div class="card stat" style="background:var(--navy);border:none;"><div class="l" style="color:#B9CBE0;">Active Teachers</div><div class="n" style="color:#fff;">27</div><div class="d up">↑ 2 this month</div></div>
+    <div class="card stat" style="background:var(--navy);border:none;"><div class="l" style="color:#B9CBE0;">Live Classes Today</div><div class="n" style="color:#fff;">34</div><div class="d up">On schedule</div></div>
+    <div class="card stat" style="background:var(--navy);border:none;"><div class="l" style="color:#B9CBE0;">Collections (MTD)</div><div class="n" style="color:#fff;">₹8.4L</div><div class="d up">↑ 11% vs last month</div></div>
+  </div>
+  <div class="grid g2" style="margin-bottom:18px;">
+    <div class="card"><h3><span class="lbl">📚 Content Library</span><a onclick="go('admin','library')">Manage</a></h3>
+      <div class="row">${icoBox(I.file,'#FFF1E0','#F5810C')}<div class="txt"><b>Class Notes</b><span>842 documents</span></div></div>
+      <div class="row">${icoBox(I.play,'#EAF1FB','#16385E')}<div class="txt"><b>Recorded Videos</b><span>603 sessions · 410 hrs</span></div></div>
+      <div class="row">${icoBox(I.mcq,'#E7F7ED','#16A34A')}<div class="txt"><b>MCQ Test Bank</b><span>1,120 questions</span></div></div>
+    </div>
+    <div class="card"><h3><span class="lbl">🏫 Batch Health</span><a onclick="go('admin','batches')">All batches</a></h3>
+      ${progRow("Batch A",85,"#16A34A")}${progRow("Batch B",66,"#F5810C")}${progRow("Batch C",90,"#16A34A")}
+    </div>
+  </div>
+  <div class="card"><h3><span class="lbl">👤 User Management</span><a onclick="go('admin','users')">All users</a></h3>
+    ${table(["Name","Role","Batch(es)","Joined","Status"],[
+      ["Kiran Kumar","Teacher","Batch A, B","Jan 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Active</span>"],
+      ["Meher Reddy","Student","Batch B","Mar 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Active</span>"],
+      ["Priya Sharma","Teacher","Batch C","Feb 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Active</span>"],
+      ["Arjun Naidu","Student","Batch A","Jun 2026","<span class='pill' style='background:#FFF1E0;color:#F5810C;'>Inactive</span>"],
+    ])}
+  </div>`;
+}
+function adminUsers(){
+  return pageHead("User Management","All students, teachers, and admins on the platform","+ Add user") + `
+  <div class="filterBar"><button class="active">All</button><button>Students</button><button>Teachers</button><button>Admins</button></div>
+  <div class="card">${table(["Name","Role","Batch(es)","Joined","Status"],[
+    ["Kiran Kumar","Teacher","Batch A, B","Jan 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Active</span>"],
+    ["Meher Reddy","Student","Batch B","Mar 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Active</span>"],
+    ["Priya Sharma","Teacher","Batch C","Feb 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Active</span>"],
+    ["Arjun Naidu","Student","Batch A","Jun 2026","<span class='pill' style='background:#FFF1E0;color:#F5810C;'>Inactive</span>"],
+    ["Divya Prakash","Student","Batch A","May 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Active</span>"],
+    ["SR Naveen Reddy","Admin","All","Jan 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Active</span>"],
+  ])}</div>`;
+}
+function adminBatches(){
+  const batches = [["Batch A","Kiran Kumar","32","85"],["Batch B","Kiran Kumar","28","66"],["Batch C","Priya Sharma","41","90"]];
+  return pageHead("Batches","All active batches and their assigned faculty","+ New batch") + `
+  <div class="grid g3">
+    ${batches.map(([n,t,s,h])=>`<div class="card"><div style="font-size:15px;font-weight:700;margin-bottom:8px;">${n}</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:4px;">Faculty: ${t}</div>
+      <div style="font-size:12px;color:var(--sub);margin-bottom:12px;">${s} students enrolled</div>
+      ${progRow("Health",parseInt(h),parseInt(h)>75?"#16A34A":"#F5810C")}
+    </div>`).join('')}
+  </div>`;
+}
+function adminLibrary(){
+  return pageHead("Content Library","All notes, videos, and tests across the platform") + `
+  <div class="grid g3" style="margin-bottom:18px;">
+    ${statTile("842","Class Notes","Across all batches")}
+    ${statTile("603","Recorded Videos","410 total hours")}
+    ${statTile("1,120","MCQ Questions","Across all subjects")}
+  </div>
+  <div class="card"><h3><span class="lbl">Recently added</span></h3>
+    ${table(["Title","Type","Batch","Added"],[
+      ["Loops & Iteration","Notes","Batch B","Today"],
+      ["Homework 14","Homework","Batch B","Today"],
+      ["Session 13 Recording","Video","Batch A","Yesterday"],
+      ["Functions Quiz","MCQ Test","Batch A","2 days ago"],
+      ["Session 12 Recording","Video","Batch B","2 days ago"],
+    ])}</div>`;
+}
+function adminPayments(){
+  return pageHead("Payments","Collections and transaction history") + `
+  <div class="grid g4" style="margin-bottom:18px;">
+    ${statTile("₹8.4L","Collected (MTD)","↑ 11% vs last month","up")}
+    ${statTile("₹1.2L","Pending Dues","32 students","down")}
+    ${statTile("96%","Collection Rate","Above target","up")}
+    ${statTile("118","Transactions (MTD)","This month")}
+  </div>
+  <div class="card">${table(["Student","Batch","Amount","Date","Status"],[
+    ["Meher Reddy","Batch B","₹4,500","Jul 2, 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Paid</span>"],
+    ["Arjun Naidu","Batch A","₹4,500","Jun 28, 2026","<span class='pill' style='background:#FFF1E0;color:#F5810C;'>Pending</span>"],
+    ["Divya Prakash","Batch A","₹4,500","Jun 25, 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Paid</span>"],
+    ["Karthik V.","Batch C","₹4,500","Jun 20, 2026","<span class='pill' style='background:#E7F7ED;color:#16A34A;'>Paid</span>"],
+  ])}</div>`;
+}
+function adminSettings(){
+  return pageHead("Settings","Platform-wide configuration") + `
+  <div class="card" style="margin-bottom:18px;"><h3><span class="lbl">General</span></h3>
+    <div class="formGrid">
+      <div class="field"><label>Platform name</label><input type="text" value="Aditya Globals"></div>
+      <div class="field"><label>Support email</label><input type="text" value="naveensr@srinfragroups.in"></div>
+      <div class="field"><label>Region</label><input type="text" value="Andhra Pradesh"></div>
+      <div class="field"><label>Time zone</label><input type="text" value="IST (UTC+5:30)"></div>
+    </div>
+  </div>
+  <div class="card"><h3><span class="lbl">Notifications</span></h3>
+    <div class="toggleRow"><div><b>Class reminders</b><span>SMS + push 15 min before live class</span></div><div class="swtch"></div></div>
+    <div class="toggleRow"><div><b>Homework due alerts</b><span>Notify students 1 day before due date</span></div><div class="swtch"></div></div>
+    <div class="toggleRow"><div><b>Payment reminders</b><span>Notify parents of pending dues</span></div><div class="swtch off"></div></div>
+  </div>`;
+}
+
+/* SYLLABUS DATA — derived from uploaded Class 6-10 entrepreneur roadmap */
+const syllabusData = [
+  { cls:"Class 6", stage:"Stage 1 — Business Foundations",
+    modules:[
+      {t:"Money Basics", topics:["What is money?","History of money","Income vs Expenses","Saving and Spending","Budgeting","Needs vs Wants","Banks and bank accounts","Digital payments (UPI, cards, wallets)","Interest (simple concept)"]},
+      {t:"Understanding Business", topics:["What is a business?","Why businesses exist","Types of businesses","Product vs Service","Small business vs Large company","Local businesses around you","How businesses make profit"]},
+      {t:"Communication Skills", topics:["Speaking clearly","Listening skills","Public speaking","Storytelling","Writing emails","Presentation skills"]},
+      {t:"Basic Mathematics for Business", topics:["Percentages","Profit and loss","Discounts","Ratios","Graphs","Data interpretation"]},
+      {t:"Observation Projects", topics:["Study nearby shops","Compare prices","Observe customer behaviour","Interview local business owners"]},
+    ],
+    projects:["Lemonade stand simulation","Handmade crafts selling","School stationery selling","Small budgeting exercise"]
+  },
+  { cls:"Class 7", stage:"Stage 2 — Understanding Markets",
+    modules:[
+      {t:"Entrepreneurship Basics", topics:["What is entrepreneurship?","Entrepreneur mindset","Risk and reward","Problem-solving","Innovation"]},
+      {t:"Marketing Basics", topics:["What is marketing?","Customer needs","Branding basics","Logos and slogans","Advertising","Social media basics"]},
+      {t:"Sales Fundamentals", topics:["What is sales?","Customer interaction","Negotiation basics","Persuasion skills","Customer service"]},
+      {t:"Technology for Business", topics:["MS Word","PowerPoint","Excel basics","Internet research","Online safety"]},
+      {t:"Economics Basics", topics:["Supply and demand","Scarcity","Resources","Markets","Producers and consumers"]},
+    ],
+    projects:["Create a brand","Design a logo","Survey 100 people","Sell a simple product"]
+  },
+  { cls:"Class 8", stage:"Stage 3 — Building Real Business Skills",
+    modules:[
+      {t:"Accounting Basics", topics:["Revenue","Expenses","Profit","Loss","Assets","Liabilities","Cash flow"]},
+      {t:"Advanced Marketing", topics:["Digital marketing","Content marketing","Email marketing","Influencer marketing","SEO basics"]},
+      {t:"Product Development", topics:["Finding problems","Product design","MVP (Minimum Viable Product)","Customer feedback"]},
+      {t:"Leadership", topics:["Team building","Delegation","Decision making","Conflict management"]},
+      {t:"Data Analysis", topics:["Excel intermediate","Charts","Dashboards","Customer data analysis"]},
+    ],
+    projects:["Launch a small online business","Create a website","Build a school service business"]
+  },
+  { cls:"Class 9", stage:"Stage 4 — Business Creation",
+    modules:[
+      {t:"Business Models", topics:["B2B","B2C","Subscription","Marketplace","Franchise","SaaS"]},
+      {t:"Finance", topics:["Financial statements","Cash flow statement","Balance sheet","Income statement"]},
+      {t:"Business Planning", topics:["Business plan","Market research","Competitor analysis","SWOT analysis"]},
+      {t:"Digital Business", topics:["E-commerce","App business","YouTube business","Affiliate marketing"]},
+      {t:"Legal Basics", topics:["Business registration","GST basics","Intellectual property","Copyright","Trademarks"]},
+    ],
+    projects:["Write a business plan","Launch a website","Run a small marketing campaign"]
+  },
+  { cls:"Class 10", stage:"Stage 5 — Entrepreneur Preparation",
+    modules:[
+      {t:"Startup Fundamentals", topics:["Startup ecosystem","Venture capital","Angel investors","Bootstrapping","Fundraising"]},
+      {t:"Advanced Marketing", topics:["Meta Ads","Google Ads","Analytics","Conversion optimization"]},
+      {t:"Business Operations", topics:["Supply chain","Inventory management","Vendor management","Quality control"]},
+      {t:"People Management", topics:["Hiring","Training","Performance management","Company culture"]},
+      {t:"Strategic Thinking", topics:["Competitive advantage","Growth strategies","Scaling a business","Business expansion"]},
+      {t:"AI for Entrepreneurs", topics:["ChatGPT","AI tools","Automation","AI marketing","AI content creation"]},
+    ],
+    projects:["Launch a real business","Generate first customers","Build a website/app","Create marketing campaigns","Present to investors"]
+  },
+];
+const essentialBooks = {
+  "Beginner":["Rich Dad Poor Dad for Teens","The Lemonade War","How to Turn $100 into $1,000,000"],
+  "Intermediate":["The Lean Startup","The Personal MBA","Think and Grow Rich"],
+  "Advanced":["Zero to One","The Psychology of Money"]
+};
+function moduleAccordion(mod, idx){
+  return `<div class="card" style="margin-bottom:12px;">
+    <h3 style="margin-bottom:${idx!==undefined?'10px':'10px'};"><span class="lbl">${mod.t}</span><span style="font-size:11px;color:var(--sub);font-weight:600;">${mod.topics.length} topics</span></h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;">
+      ${mod.topics.map(t=>`<span class="pill" style="background:var(--bg);color:var(--ink);border:1px solid var(--line);font-weight:600;">${t}</span>`).join('')}
+    </div>
+  </div>`;
+}
+function booksBlock(){
+  return `<div class="card"><h3><span class="lbl">📚 Essential Books (Class 6–10)</span></h3>
+    <div class="grid g3">
+      ${Object.entries(essentialBooks).map(([level,books])=>`<div>
+        <div style="font-size:11.5px;font-weight:700;color:var(--orange);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px;">${level}</div>
+        ${books.map(b=>`<div style="font-size:12.5px;margin-bottom:6px;">${b}</div>`).join('')}
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+function studentSyllabus(){
+  const my = syllabusData[3]; // Class 9 — matches Meher's profile
+  return pageHead("Syllabus — "+my.cls, my.stage) + `
+  <div class="card" style="margin-bottom:16px;background:linear-gradient(120deg,var(--navy),var(--navy-2));border:none;color:#fff;">
+    <div style="font-size:13px;color:#CFE0F2;">Your class</div>
+    <div style="font-family:'Sora';font-size:20px;margin:4px 0;">${my.cls} · ${my.stage.split('—')[1].trim()}</div>
+    <div style="font-size:12px;color:#B9CBE0;">${my.modules.length} modules · ${my.modules.reduce((a,m)=>a+m.topics.length,0)} topics · ${my.projects.length} projects</div>
+  </div>
+  ${my.modules.map(m=>moduleAccordion(m)).join('')}
+  <div class="card" style="margin-bottom:16px;"><h3><span class="lbl">🚀 Stage Projects</span></h3>
+    ${my.projects.map(p=>`<div class="row">${icoBox(I.check,'#FFF1E0','#F5810C')}<div class="txt"><b>${p}</b><span>Hands-on project for ${my.cls}</span></div></div>`).join('')}
+  </div>
+  ${booksBlock()}`;
+}
+function teacherSyllabus(){
+  return pageHead("Syllabus","Full Class 6–10 entrepreneur roadmap — plan lessons by class") + `
+  <div class="filterBar">${syllabusData.map((s,i)=>`<button class="${i===0?'active':''}" onclick="renderSyllabusTab(${i},'teacher')">${s.cls}</button>`).join('')}</div>
+  <div id="syllabusTabBody">${renderSyllabusClassBody(0)}</div>`;
+}
+function adminSyllabus(){
+  const totalModules = syllabusData.reduce((a,s)=>a+s.modules.length,0);
+  const totalTopics = syllabusData.reduce((a,s)=>a+s.modules.reduce((b,m)=>b+m.topics.length,0),0);
+  return pageHead("Syllabus","Curriculum overview — Class 6 to 10 entrepreneur roadmap") + `
+  <div class="grid g4" style="margin-bottom:18px;">
+    ${statTile("5","Classes Covered","Class 6 – 10")}
+    ${statTile(String(totalModules),"Total Modules","Across all classes")}
+    ${statTile(String(totalTopics),"Total Topics","Across all modules")}
+    ${statTile(String(syllabusData.reduce((a,s)=>a+s.projects.length,0)),"Stage Projects","Hands-on deliverables")}
+  </div>
+  <div class="card" style="margin-bottom:16px;">${table(["Class","Stage","Modules","Topics","Projects"], syllabusData.map(s=>[s.cls, s.stage.split('—')[1].trim(), String(s.modules.length), String(s.modules.reduce((a,m)=>a+m.topics.length,0)), String(s.projects.length)]))}</div>
+  <div class="filterBar">${syllabusData.map((s,i)=>`<button class="${i===0?'active':''}" onclick="renderSyllabusTab(${i},'admin')">${s.cls}</button>`).join('')}</div>
+  <div id="syllabusTabBody">${renderSyllabusClassBody(0)}</div>`;
+}
+function renderSyllabusClassBody(i){
+  const s = syllabusData[i];
+  return `<div class="card" style="margin-bottom:16px;"><h3><span class="lbl">${s.cls} — ${s.stage.split('—')[1].trim()}</span></h3></div>
+  ${s.modules.map(m=>moduleAccordion(m)).join('')}
+  <div class="card" style="margin-bottom:16px;"><h3><span class="lbl">🚀 Stage Projects</span></h3>
+    ${s.projects.map(p=>`<div class="row">${icoBox(I.check,'#FFF1E0','#F5810C')}<div class="txt"><b>${p}</b></div></div>`).join('')}
+  </div>${booksBlock()}`;
+}
+function renderSyllabusTab(i, role){
+  document.querySelectorAll('.filterBar button').forEach((b,bi)=>b.classList.toggle('active', bi===i));
+  document.getElementById('syllabusTabBody').innerHTML = renderSyllabusClassBody(i);
+}
+
+function adminSubjects(){
+  const subjects = [
+    ["Python Programming","Class 9","Kiran Kumar","32"],
+    ["Business Creation","Class 9","Priya Sharma","28"],
+    ["Web Fundamentals","Class 8","Kiran Kumar","41"],
+    ["Marketing Basics","Class 7","Priya Sharma","36"],
+    ["Money Basics","Class 6","Kiran Kumar","29"],
+  ];
+  return pageHead("Subject Management","All subjects taught across classes","+ Add subject") + `
+  <div class="card">${table(["Subject","Class","Faculty","Students"], subjects)}</div>`;
+}
+function adminAttendance(){
+  return pageHead("Attendance Analytics","Attendance trends across all batches") + `
+  <div class="grid g4" style="margin-bottom:18px;">
+    ${statTile("91%","Platform Attendance","↑ 2% vs last month","up")}
+    ${statTile("34","Absentees Today","Across all batches","down")}
+    ${statTile("96%","Best Batch (C)","Highest attendance")}
+    ${statTile("81%","Lowest Batch (B)","Needs follow-up","down")}
+  </div>
+  <div class="card"><h3><span class="lbl">Attendance by batch — last 4 weeks</span></h3>
+    <div class="bars">${[["Batch A",88],["Batch B",81],["Batch C",96],["Batch D",90]].map(([l,v])=>`<div class="bar"><div class="val">${v}%</div><div class="fill" style="height:${v*0.9}%;"></div><div class="lab">${l}</div></div>`).join('')}</div>
+  </div>`;
+}
+function adminReports(){
+  const reports = [
+    ["Monthly Attendance Report","Jun 2026","PDF"],
+    ["Term Performance Report","Term 2","XLSX"],
+    ["Fee Collection Summary","Jun 2026","PDF"],
+    ["Batch Health Report","Jul 2026","PDF"],
+    ["Faculty Activity Report","Jun 2026","XLSX"],
+  ];
+  return pageHead("School Reports","Consolidated reports across the platform","+ Generate report") + `
+  <div class="card">${table(["Report","Period","Format","Action"], reports.map(r=>[...r,"<button class='miniBtn'>Download</button>"]))}</div>`;
+}
+function adminAuditLogs(){
+  const logs = [
+    ["SR Naveen Reddy","Updated payment settings","Today, 11:20 AM"],
+    ["Kiran Kumar","Uploaded Homework 14 to Batch B","Today, 2:30 PM"],
+    ["SR Naveen Reddy","Added new user: Divya Prakash","Yesterday, 4:05 PM"],
+    ["Priya Sharma","Marked attendance for Batch C","Yesterday, 6:45 PM"],
+    ["SR Naveen Reddy","Changed notification settings","2 days ago"],
+    ["Kiran Kumar","Deactivated user: Arjun Naidu","3 days ago"],
+  ];
+  return pageHead("Audit Logs","Track of all administrative actions on the platform") + `
+  <div class="card">${table(["User","Action","Timestamp"], logs)}</div>`;
+}
+
+const pages = {
+  student:{dashboard:studentDashboard, live:studentLive, calendar:studentCalendar, attendance:studentAttendance, notes:studentNotes, projects:studentProjects, videos:studentVideos, syllabus:studentSyllabus, assessments:studentAssessments, mcq:studentMcq, ide:studentIde, reports:studentReports, leaderboard:studentLeaderboard, certifications:studentCertifications, notifications:studentNotifications},
+  teacher:{dashboard:teacherDashboard, schedule:teacherSchedule, attendance:teacherAttendance, upload:teacherUpload, syllabus:teacherSyllabus, students:teacherStudents, performance:teacherPerformance, grading:teacherGrading, communication:teacherCommunication},
+  admin:{overview:adminOverview, users:adminUsers, batches:adminBatches, subjects:adminSubjects, syllabus:adminSyllabus, library:adminLibrary, attendance:adminAttendance, reports:adminReports, payments:adminPayments, auditlogs:adminAuditLogs, settings:adminSettings}
+};
+
+function renderNav(){
+  document.getElementById('nav').innerHTML = navData[state.role].map(i=>`<a class="${i.key===state.page?'on':''}" onclick="go('${state.role}','${i.key}')">${i.icon} ${i.label}</a>`).join('');
+}
+function renderPage(){ document.getElementById('pageContent').innerHTML = pages[state.role][state.page](); }
+function renderTop(){
+  const m = topMeta[state.role];
+  document.getElementById('topTitle').textContent = (state.page==='dashboard'||state.page==='overview') ? m.title : pageTitles[state.role][state.page];
+  document.getElementById('topMeta').textContent = m.meta;
+  document.getElementById('avatarTxt').textContent = m.av;
+}
+function openNav(){
+  document.getElementById('sidebar').classList.add('open');
+  document.getElementById('navOverlay').classList.add('on');
+}
+function closeNav(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('navOverlay').classList.remove('on');
+}
+function go(role, page){
+  state.role = role; state.page = page;
+  document.querySelectorAll('.roleSwitch button').forEach(b=>b.classList.toggle('active', b.dataset.role===role));
+  renderNav(); renderPage(); renderTop();
+  closeNav();
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.roleSwitch button').forEach(b=>{
+  b.addEventListener('click', ()=>go(b.dataset.role, b.dataset.role==='admin' ? 'overview' : 'dashboard'));
+});
+go('student','dashboard');
+</script>
+</body>
+</html>
