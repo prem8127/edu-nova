@@ -62,18 +62,23 @@ class GradeScaffold extends ConsumerWidget {
                 ),
                 child: Row(
                   children: [
-                    if (showBack)
-                      _CircleButton(
-                        icon: Icons.arrow_back_rounded,
-                        onTap: () => context.pop(),
-                      )
-                    else
-                      Builder(
-                        builder: (context) => _CircleButton(
-                          icon: Icons.menu_rounded,
-                          onTap: () => Scaffold.of(context).openDrawer(),
-                        ),
-                      ),
+                    // Only show a back arrow when there is actually a
+                    // previous screen on the stack to return to (i.e. this
+                    // screen was `push`ed). Screens reached directly from
+                    // the drawer via `go` replace the stack, so there is
+                    // nothing to pop back to — those always get the
+                    // hamburger menu instead, even if [showBack] is true.
+                    Builder(
+                      builder: (context) {
+                        final canPop = showBack && context.canPop();
+                        return _CircleButton(
+                          icon: canPop ? Icons.arrow_back_rounded : Icons.menu_rounded,
+                          onTap: canPop
+                              ? () => context.pop()
+                              : () => Scaffold.of(context).openDrawer(),
+                        );
+                      },
+                    ),
                     const SizedBox(width: 12),
                     if (icon != null) ...[
                       Container(

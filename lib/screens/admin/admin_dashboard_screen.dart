@@ -47,11 +47,16 @@ class AdminDashboardScreen extends ConsumerWidget {
                       children: [
                         _StatsGrid(
                           desktop: desktop,
-                          cards: const [
-                            _StatData('Total Students', '1,248', '↑ 6.2% MoM'),
-                            _StatData('Active Teachers', '27', '↑ 2 this month'),
-                            _StatData('Live Classes Today', '34', 'On schedule'),
-                            _StatData('Collections (MTD)', '₹8.4L', '↑ 11% vs last month'),
+                          cards: [
+                            const _StatData('Total Students', '1,248', '↑ 6.2% MoM'),
+                            const _StatData('Active Teachers', '27', '↑ 2 this month'),
+                            const _StatData('Live Classes Today', '34', 'On schedule'),
+                            _StatData(
+                              'Collections (MTD)',
+                              '₹8.4L',
+                              '↑ 11% vs last month',
+                              onTap: () => context.push(AppRoutes.adminPayments),
+                            ),
                           ],
                         ),
                         SizedBox(height: desktop ? 18 : 14),
@@ -195,10 +200,11 @@ class _DashboardCard extends StatelessWidget {
 }
 
 class _StatData {
-  const _StatData(this.label, this.value, this.note);
+  const _StatData(this.label, this.value, this.note, {this.onTap});
   final String label;
   final String value;
   final String note;
+  final VoidCallback? onTap;
 }
 
 class _StatsGrid extends StatelessWidget {
@@ -237,7 +243,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    final card = Container(
       height: 100,
       padding: const EdgeInsets.fromLTRB(18, 17, 18, 15),
       decoration: BoxDecoration(
@@ -276,6 +282,17 @@ class _StatCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+
+    if (data.onTap == null) return card;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: data.onTap,
+        child: card,
       ),
     );
   }

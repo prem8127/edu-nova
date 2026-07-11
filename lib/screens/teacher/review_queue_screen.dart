@@ -29,7 +29,7 @@ class ReviewQueueScreen extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const PageHeader(
-                  title: 'Review queue',
+                  title: 'Grading queue',
                   subtitle: 'Submissions awaiting your review',
                 ),
                 const TabBar(

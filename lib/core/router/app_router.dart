@@ -43,17 +43,22 @@ import '../../screens/student/profile_screen.dart';
 import '../../screens/student/quiz_screen.dart';
 import '../../screens/student/recorded_videos_screen.dart';
 import '../../screens/shared/doubt_thread_screen.dart';
+import '../../screens/admin/syllabus_screen.dart';
+import '../../screens/student/syllabus_screen.dart';
+import '../../screens/teacher/syllabus_screen.dart';
 import '../../screens/teacher/announcements_screen.dart';
 import '../../screens/teacher/assigned_courses_screen.dart';
 import '../../screens/teacher/attendance_marking_screen.dart';
 import '../../screens/teacher/availability_screen.dart';
 import '../../screens/teacher/batches_screen.dart';
-import '../../screens/teacher/content_upload_screen.dart';
+import '../../screens/teacher/upload_content_screen.dart';
 import '../../screens/teacher/doubt_chat_list_screen.dart';
 import '../../screens/teacher/earnings_screen.dart';
+import '../../screens/teacher/my_students_screen.dart';
 import '../../screens/teacher/review_queue_screen.dart';
 import '../../screens/teacher/start_class_screen.dart';
 import '../../screens/teacher/teacher_dashboard_screen.dart';
+import '../../screens/admin/payments_screen.dart';
 
 /// Route paths centralized so screens don't hardcode strings when
 /// navigating (context.go(AppRoutes.dashboard) instead of '/dashboard').
@@ -86,9 +91,12 @@ class AppRoutes {
   static const studentNotes = '/student/notes';
   static const studentAssignments = '/student/assignments';
   static const studentCodingIde = '/student/coding-ide';
+  static const studentSyllabus = '/student/syllabus';
 
   static const teacherDashboard = '/teacher';
   static const teacherAssignedCourses = '/teacher/courses';
+  static const teacherMyStudents = '/teacher/students';
+  static const teacherSyllabus = '/teacher/syllabus';
   static const teacherStartClass = '/teacher/start-class';
   static const teacherDoubtChat = '/teacher/doubt-chat';
   static const teacherEarnings = '/teacher/earnings';
@@ -102,6 +110,8 @@ class AppRoutes {
 
   static const adminDashboard = '/admin';
   static const adminManageTeachers = '/admin/teachers';
+  static const adminSyllabus = '/admin/syllabus';
+  static const adminPayments = '/admin/payments';
   static const adminStudentProgress = '/admin/students';
   static const adminStudentProgressDetail = '/admin/students/:studentId';
   static const adminClasses = '/admin/classes';
@@ -158,8 +168,7 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: AppRoutes.roleSelect,
-        // Sign-in is the app's landing screen (WelcomeScreen is left in
-        // place, unwired, same treatment as RoleSelectScreen).
+        // Student sign-in is the app's landing screen.
         builder: (context, state) => const StudentLoginScreen(),
       ),
       GoRoute(
@@ -274,6 +283,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: AppRoutes.studentCodingIde,
         builder: (context, state) => const CodingIdeScreen(),
       ),
+      GoRoute(
+        path: AppRoutes.studentSyllabus,
+        builder: (context, state) => const StudentSyllabusScreen(),
+      ),
 
       // Teacher
       GoRoute(
@@ -283,6 +296,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.teacherAssignedCourses,
         builder: (context, state) => const AssignedCoursesScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.teacherMyStudents,
+        builder: (context, state) => const MyStudentsScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.teacherSyllabus,
+        builder: (context, state) => const TeacherSyllabusScreen(),
       ),
       GoRoute(
         path: AppRoutes.teacherStartClass,
@@ -318,7 +339,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: AppRoutes.teacherContentUpload,
-        builder: (context, state) => const ContentUploadScreen(),
+        builder: (context, state) => const UploadContentScreen(),
       ),
 
       // Admin
@@ -329,6 +350,14 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.adminManageTeachers,
         builder: (context, state) => const ManageTeachersScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminSyllabus,
+        builder: (context, state) => const AdminSyllabusScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.adminPayments,
+        builder: (context, state) => const PaymentsScreen(),
       ),
       GoRoute(
         path: AppRoutes.adminStudentProgress,

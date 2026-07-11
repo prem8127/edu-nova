@@ -1,0 +1,11 @@
+{
+  "name": "Aditya Globals",
+  "short_name": "Aditya Globals",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F5F7FA",
+  "theme_color": "#0F2A4A",
+  "description": "Aditya Globals learning platform - live classes, quizzes & doubt chat",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false
+}

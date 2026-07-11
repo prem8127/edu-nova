@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../models/quiz_model.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/progress_provider.dart';
+import '../../core/router/app_router.dart';
 import '../../providers/repository_providers.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
@@ -66,7 +67,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/student/home');
+              context.go(AppRoutes.studentDashboard);
             }
           },
         ),
@@ -139,7 +140,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                     if (context.canPop()) {
                       context.pop();
                     } else {
-                      context.go('/student/home');
+                      context.go(AppRoutes.studentDashboard);
                     }
                   },
                   child: const Text('Done'),

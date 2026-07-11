@@ -69,7 +69,7 @@ class TeacherDashboardScreen extends ConsumerWidget {
                                     child: SizedBox(
                                       height: 245,
                                       child: _ScheduleCard(
-                                        onCalendar: () => context.push(AppRoutes.teacherStartClass),
+                                        onCalendar: () => context.push(AppRoutes.teacherAvailability),
                                         onStart: () => context.push(AppRoutes.teacherStartClass),
                                       ),
                                     ),
@@ -88,7 +88,7 @@ class TeacherDashboardScreen extends ConsumerWidget {
                             : Column(
                                 children: [
                                   _ScheduleCard(
-                                    onCalendar: () => context.push(AppRoutes.teacherStartClass),
+                                    onCalendar: () => context.push(AppRoutes.teacherAvailability),
                                     onStart: () => context.push(AppRoutes.teacherStartClass),
                                   ),
                                   const SizedBox(height: 14),
@@ -99,7 +99,7 @@ class TeacherDashboardScreen extends ConsumerWidget {
                               ),
                         SizedBox(height: desktop ? 18 : 14),
                         _StudentPerformanceCard(
-                          onAction: () => context.push(AppRoutes.teacherReviewQueue),
+                          onAction: () => context.push(AppRoutes.teacherMyStudents),
                         ),
                       ],
                     ),
@@ -467,12 +467,12 @@ class _UploadContentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (Icons.article_outlined, 'Class Notes'),
-      (Icons.check_circle_outline_rounded, 'Homework'),
-      (Icons.play_arrow_rounded, 'Recording'),
-      (Icons.grid_view_rounded, 'MCQ Test'),
-      (Icons.add_rounded, 'New Batch'),
-      (Icons.campaign_outlined, 'Announcement'),
+      (Icons.article_outlined, 'Class Notes', onOpen),
+      (Icons.check_circle_outline_rounded, 'Homework', onOpen),
+      (Icons.play_arrow_rounded, 'Recording', onOpen),
+      (Icons.grid_view_rounded, 'MCQ Test', onOpen),
+      (Icons.add_rounded, 'New Batch', () => context.push(AppRoutes.teacherBatches)),
+      (Icons.campaign_outlined, 'Announcement', () => context.push(AppRoutes.teacherAnnouncements)),
     ];
     return _DashboardCard(
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
@@ -496,7 +496,7 @@ class _UploadContentCard extends StatelessWidget {
               for (final item in items)
                 InkWell(
                   borderRadius: BorderRadius.circular(9),
-                  onTap: onOpen,
+                  onTap: item.$3,
                   child: Container(
                     alignment: Alignment.center,
                     decoration: BoxDecoration(

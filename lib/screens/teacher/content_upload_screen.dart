@@ -56,6 +56,7 @@ class _ContentUploadScreenState extends ConsumerState<ContentUploadScreen> {
       title: 'Content Upload',
       subtitle: 'Publish videos, notes & assignments',
       icon: Icons.cloud_upload_rounded,
+      showBack: false,
       child: ListView(
         padding: const EdgeInsets.fromLTRB(14, 6, 14, 24),
         children: [

@@ -61,10 +61,22 @@ class PageHeader extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
     padding: const EdgeInsets.fromLTRB(20, 12, 20, 18),
     child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      if (showBack) ...[
-        RoundIconButton(icon: Icons.arrow_back_rounded, onTap: () => context.pop()),
-        const SizedBox(width: 14),
-      ],
+      // Only render a back arrow if there's actually somewhere to pop back
+      // to (this screen was `push`ed). Screens reached from the drawer via
+      // `go` have nothing to pop to, so they get a menu button that opens
+      // the drawer instead — never a dead back arrow.
+      Builder(builder: (context) {
+        final canPop = showBack && context.canPop();
+        return Row(children: [
+          RoundIconButton(
+            icon: canPop ? Icons.arrow_back_rounded : Icons.menu_rounded,
+            onTap: canPop
+                ? () => context.pop()
+                : () => Scaffold.of(context).openDrawer(),
+          ),
+          const SizedBox(width: 14),
+        ]);
+      }),
       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(title, style: Theme.of(context).textTheme.headlineMedium),
         if (subtitle != null) ...[const SizedBox(height: 4), Text(subtitle!, style: Theme.of(context).textTheme.bodyMedium)],
